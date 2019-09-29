@@ -93,9 +93,6 @@ class ProjMan(object):
                 if self.verbose:
                     print("Repo : {}, already exists skipping!!".format(obj["name"]))
 
-        self.santityCheckInitialization()
-
-
     def cloneGitRepo(self, url, path, branch=None):
         """
         Function to clone git repo to a specific directory
@@ -118,10 +115,10 @@ class ProjMan(object):
         if self.verbose:
             print("INFO : Cloning from {} to {} at branch/rev {}".format(url, path, br))
 
-        git_cmd = ["git", "clone", "-b", branch, url, path]
+        git_cmd = ["git", "clone", "-b", br, url, path]
 
         if self.verbose:
-            print("INFO : Running Command {}".format(git_cmd))
+            print("INFO : Running Command {}".format(" ".join(git_cmd)))
 
         SubProcessUtility.runCommand(git_cmd)
 
@@ -202,6 +199,80 @@ class ProjMan(object):
 
         return rev
 
+    def updateBuildArea(self):
+        """
+        Function to update build area to specified revisions/branches
 
+        Arguments
+        ---------
+        None
+
+        Returns
+        ------
+        None
+        """
+
+        self.initializeBuildArea()
+
+        for obj in self.config["repos"]:
+            if "branch" in obj:
+                self.gitCheckoutBranch(obj["path"], obj["branch"])
+            elif "rev" in obj:
+                self.gitCheckoutRevision(obj["path"], obj["rev"])
+
+
+    def gitCheckoutBranch(self, path, branch):
+        """
+        Function to checkout a specific branch
+
+        Arguments
+        ---------
+        path : string
+            path to directory
+
+        branch : string
+            name of branch to checkout
+
+        Returns
+        -------
+        None
+        """
+
+        with workInDirectory(path):
+            fetch_cmd = ["git", "fetch"]
+            if self.verbose:
+                print("Runing Command : {}".format(" ".join(fetch_cmd)))
+
+            SubProcessUtility.runCommand(fetch_cmd)
+
+            checkout_branch_command = ["git", "checkout", branch]
+            if self.verbose:
+                print("Running Command : {}".format(" ".join(checkout_branch_command)))
+            SubProcessUtility.runCommand(checkout_branch_command)
+
+
+    def gitCheckoutRevision(self, path, rev):
+        """
+        Function to checkout specific git revision
+
+        Arguments
+        ---------
+        path : string
+            path to directory
+
+        rev : string 
+            hash of revision to checkout
+
+        Returns
+        -------
+        None
+        """
+
+        with workInDirectory(path):
+            checkoutCmd = ["git", "checkout", rev]
+
+            if self.verbose:
+                print("Runing command : {}".format(" ".join(checkoutCmd)))
+            SubProcessUtility.runCommand(checkoutCmd)
 
         

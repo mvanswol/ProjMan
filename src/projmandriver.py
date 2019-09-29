@@ -88,6 +88,22 @@ class ProjManDriver(object):
         """
 
         self.projman.initializeBuildArea()
+        self.projman.santityCheckInitialization()
+
+    def updateBuildArea(self):
+        """
+        Function to update bulid area to specified branches or revisions
+
+        Arguments
+        --------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self.projman.updateBuildArea()
 
 
 def main():
@@ -118,7 +134,7 @@ def main():
     if args.action == "init":
         driver.initializeBuildArea()
     elif args.action == "update":
-        print("update called")
+        driver.updateBuildArea()
     elif args.action == "repo_status":
         driver.getRepoStatus()
 
