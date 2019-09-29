@@ -2,10 +2,11 @@
 
 import sys
 from os.path import isdir
-from os import chdir, getcwd
+from os import makedirs
 import re
 
 from subprocessutility import SubProcessUtility
+from directoryContextManager import workInDirectory
 
 class ProjMan(object):
     def __init__(self, config_file, verbose):
@@ -58,6 +59,90 @@ class ProjMan(object):
 
         return (self.config != None)
 
+    def initializeBuildArea(self):
+        """
+        Function to initialize build area checking for existing repos,
+        and creating/cloning any that might not exist
+
+        Arguments
+        ---------
+        None
+
+        Returns
+        -------
+        None
+
+        """
+
+        repo_map = self.getRepoStatus()
+
+        for obj in self.config["repos"]:
+            if obj["name"] not in repo_map:
+                if "url" in obj:
+                    print("Checking out code to {} for {}".format(obj["path"], obj["name"]))
+                    if "branch" in obj:
+                        self.cloneGitRepo(obj["url"], obj["path"], obj["branch"])
+                    else:
+                        self.cloneGitRepo(obj["url"], obj["path"])
+
+                else:
+                    print("Creating directory : {} for repo : {}".format(obj["path"], obj["name"]))
+                    makedirs(obj["path"])
+
+            else:
+                if self.verbose:
+                    print("Repo : {}, already exists skipping!!".format(obj["name"]))
+
+        self.santityCheckInitialization()
+
+
+    def cloneGitRepo(self, url, path, branch=None):
+        """
+        Function to clone git repo to a specific directory
+
+        Arguments
+        ---------
+        url : string
+            url of the git repo to clone
+        path : string
+            path to clone to
+        branch : string (optional)
+            optional argument of branch to clone, if not specified master
+
+        Returns
+        -------
+        None
+        """
+
+        br = "master" if branch is None else branch
+        if self.verbose:
+            print("INFO : Cloning from {} to {} at branch/rev {}".format(url, path, br))
+
+        git_cmd = ["git", "clone", "-b", branch, url, path]
+
+        if self.verbose:
+            print("INFO : Running Command {}".format(git_cmd))
+
+        SubProcessUtility.runCommand(git_cmd)
+
+    def santityCheckInitialization(self):
+        """
+        Function to check that all repos in config are present in the workspace
+
+        Arguments
+        ---------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        for obj in self.config["repos"]:
+            if not isdir(obj["path"]):
+                print("ERROR : Initialization Failed missing {} at path {}".format(obj["name"], obj["path"]))
+
+
     def getRepoStatus(self):
         """
         Function to get map of current revisions of repos
@@ -102,23 +187,18 @@ class ProjMan(object):
         if self.verbose:
             print("INFO : Getting info in {}".format(path))
 
-        curr_dir = getcwd()
+        rev = None
+        with workInDirectory(path):
 
-        # Run git command from repo
-        chdir(path)
+            rev_cmd_args = ['git', 'rev-parse', 'HEAD']
 
-        rev_cmd_args = ['git', 'rev-parse', 'HEAD']
+            if self.verbose:
+                print("INFO : Running command : {}".format(" ".join(rev_cmd_args)))
 
-        if self.verbose:
-            print("INFO : Running command : {}".format(" ".join(rev_cmd_args)))
+            rev = SubProcessUtility.runCommand(rev_cmd_args)
 
-        rev = SubProcessUtility.runCommand(rev_cmd_args)
-
-        # go back to original directory
-        chdir(curr_dir)
-
-        if rev == None:
-            print("Unable to get revision for {}, make sure config is correct".format(path))
+            if rev == None:
+                print("Unable to get revision for {}, make sure config is correct".format(path))
 
         return rev
 

@@ -72,6 +72,24 @@ class ProjManDriver(object):
         for key in repo_map:
             print("{} at {}".format(key, repo_map[key]))
 
+
+    def initializeBuildArea(self):
+        """
+        Function to initialize build area, checking for existing directories
+        in the config and then getting any missing directories
+
+        Arguments
+        --------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self.projman.initializeBuildArea()
+
+
 def main():
     import argparse
 
@@ -98,7 +116,7 @@ def main():
         sys.exit(1)
 
     if args.action == "init":
-        print("init called")
+        driver.initializeBuildArea()
     elif args.action == "update":
         print("update called")
     elif args.action == "repo_status":
