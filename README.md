@@ -1,6 +1,25 @@
 # ProjMan
 a simple python based utility to help with managing git repositories for a specified project
 
+# Usage
+
+```
+usage: projman [-h] [-c CONFIG_FILE] [-v] action
+
+A simple python module useful from managing a project with multiple
+repositories. This will allow a user to provide a config file with a list of
+git repositories their location, and their branches, commits.
+
+positional arguments:
+  action                action argument, repo_status, update, init
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config_file CONFIG_FILE
+                        optional config file argument
+  -v, --verbose         verbose output
+```
+
 # License
 
 MIT License
