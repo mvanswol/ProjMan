@@ -22,7 +22,11 @@ class SubProcessUtility(object):
             Output of command
         """
 
-        proc = subprocess.Popen(arg_list)
+        proc = subprocess.Popen(arg_list, stdout=subprocess.PIPE)
+
+        outs = None
+        errs = None
+
 
         try:
             outs, errs = proc.communicate()
@@ -31,10 +35,10 @@ class SubProcessUtility(object):
             return None
 
         if errs:
-            print("Error : {}".format(errs))
+            print("Error : {}".format(errs.decode("utf-8")))
             return None
 
         if outs == None:
             return None
 
-        return str(outs).strip()
+        return outs.decode('utf-8').strip()

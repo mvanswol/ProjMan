@@ -102,7 +102,6 @@ def main():
     elif args.action == "update":
         print("update called")
     elif args.action == "repo_status":
-        print("repo_stats called")
         driver.getRepoStatus()
 
 
